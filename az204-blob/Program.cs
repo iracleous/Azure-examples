@@ -1,10 +1,11 @@
-﻿using az204_blob;
+﻿using az204_blob.Examples;
+using System.Threading.Tasks;
+using Microsoft.Identity.Client;
+
+//await Storage.DoWork();
 
 
-Storage.DoWork();
 
-
-string[] args0 = new string[] { };
-await ProgramCosmos.Main(args0);
+await ProgramCosmos.Main(Array.Empty<string>());
 
 

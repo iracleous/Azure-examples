@@ -7,7 +7,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
 
-namespace az204_blob;
+namespace az204_blob.Examples;
 
 public static class Storage
 {
@@ -16,8 +16,8 @@ public static class Storage
         Console.WriteLine("Azure Blob Storage exercise\n");
 
         // Run the examples asynchronously, wait for the results before proceeding
-        Task task =  ProcessAsync();
-       await task  ;
+        Task task = ProcessAsync();
+        await task;
 
         Console.WriteLine("Press enter to exit the sample application.");
         Console.ReadLine();
