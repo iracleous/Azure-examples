@@ -74,9 +74,10 @@ public class ProgramCosmos
         await CreateContainerAsync();
 
 
-        await AddToContainer();
+       // await AddToContainer();
 
-        await Query();
+        await Query("Papadopoulou");
+        await Query("Guffy");
 
         await QueryWithLinQ();
 
@@ -104,17 +105,20 @@ public class ProgramCosmos
 
         var customer1 = new Customer
         {
+          
             FirstName = "Anna",
             LastName = "Papadopoulou",
             Country = "Greece",
             Income = 6500,
             Emails = new() { "anna@fake.com", "annak@jmail.com" }
         };
+
         ItemResponse<Customer> itemResponse = await
             container.CreateItemAsync(customer1, new PartitionKey(customer1.Country));
 
         var customer2 = new Customer
         {
+           
             FirstName = "Donald",
             LastName = "Guffy",
             Country = "USA",
@@ -124,24 +128,28 @@ public class ProgramCosmos
         ItemResponse<Customer> itemResponse2 = await
             container.CreateItemAsync(customer2, new PartitionKey(customer2.Country));
 
-
-        string customerId = itemResponse2.Resource.id.ToString();
+/*
+        string customerId = itemResponse2.Resource.CustId.ToString();
         var partitionKey = new PartitionKey( itemResponse2.Resource.Country);
 
         ItemResponse<Customer> resp = await container.ReadItemAsync<Customer>(customerId,
             partitionKey);
 
-        Console.WriteLine(resp.Resource.FirstName);
+        Console.WriteLine($"id = {resp.Resource.CustId} name = {resp.Resource.FirstName}");
+*/
     }
 
 
-    private async Task Query()
+    private async Task Query(string customerLastName)
     {
-        QueryDefinition query = new QueryDefinition("SELECT c.FirstName, c.LastName FROM Customers c WHERE c.LastName = @LastName")
-    .WithParameter("@LastName", "Karenina");
+        QueryDefinition query = new QueryDefinition
+            ("SELECT c.FirstName, c.LastName FROM Customers c WHERE c.LastName = @LastName")
+          .WithParameter("@LastName", customerLastName);
 
         FeedIterator<Customer> customersFeed = container.GetItemQueryIterator<Customer>
-            (query, requestOptions: new QueryRequestOptions() { PartitionKey = new PartitionKey("Greece"), MaxItemCount = 1 });
+            (query);
+        //    (query, requestOptions: new QueryRequestOptions() { 
+        //        PartitionKey = new PartitionKey("Greece"), MaxItemCount = 10 });
 
         while (customersFeed.HasMoreResults)
         {
@@ -149,7 +157,7 @@ public class ProgramCosmos
 
             foreach (Customer customer in customtersPage)
             {
-                Console.WriteLine($"Retrieved customer: {customer.FirstName} 	{customer.LastName}");
+                Console.WriteLine($"Retrieved customer: {customer.id}  {customer.FirstName} 	{customer.LastName}");
             }
         }
     }
@@ -158,7 +166,12 @@ public class ProgramCosmos
     {
         IOrderedQueryable<Customer> customersQueryable = container.GetItemLinqQueryable<Customer>(); //Get IQueryable Object
 
-        IOrderedQueryable<Customer> linqQuery = customersQueryable.Where(c => c.Country == "UK").OrderBy(c => c.LastName);
+        IOrderedQueryable<Customer> linqQuery = customersQueryable
+        //    .Where(c => c.Country == "UK")
+            .OrderBy(c => c.LastName);
+
+
+
 
         //Convert Query to Feed Enumerator
         using FeedIterator<Customer> linqFeed = linqQuery.ToFeedIterator();
@@ -168,7 +181,7 @@ public class ProgramCosmos
             Console.WriteLine("---------------------");
             foreach (Customer c in linqFeedResponse)
             {
-                Console.WriteLine($"LINQ Found Customer {c.FirstName} {c.LastName}");
+                Console.WriteLine($"LINQ Found Customer {c.id} {c.FirstName} {c.LastName}");
             }
         }
     }
