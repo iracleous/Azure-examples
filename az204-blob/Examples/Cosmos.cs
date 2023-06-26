@@ -9,6 +9,7 @@ namespace az204_blob.Examples;
 using az204_blob.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
+using StackExchange.Redis;
 
 public class ProgramCosmos
 {
@@ -85,6 +86,8 @@ public class ProgramCosmos
 
     private async Task CreateDatabaseAsync()
     {
+
+        if (cosmosClient == null) { return; }
         // Create a new database using the cosmosClient
         database = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
         Console.WriteLine("Created Database: {0}\n", database.Id);
@@ -92,6 +95,7 @@ public class ProgramCosmos
 
     private async Task CreateContainerAsync()
     {
+        if (database == null) { return; }
         // Create a new container
         container = await database.CreateContainerIfNotExistsAsync(containerId, "/Country");
         Console.WriteLine("Created Container: {0}\n", container.Id);
@@ -102,7 +106,7 @@ public class ProgramCosmos
     private async Task AddToContainer()
     {
 
-
+        if (container == null) { return; }
         var customer1 = new Customer
         {
           
@@ -142,6 +146,7 @@ public class ProgramCosmos
 
     private async Task Query(string customerLastName)
     {
+        if (container == null) { return; }
         QueryDefinition query = new QueryDefinition
             ("SELECT c.FirstName, c.LastName FROM Customers c WHERE c.LastName = @LastName")
           .WithParameter("@LastName", customerLastName);
@@ -164,6 +169,7 @@ public class ProgramCosmos
 
     private async Task QueryWithLinQ()
     {
+        if (container == null) { return; }
         IOrderedQueryable<Customer> customersQueryable = container.GetItemLinqQueryable<Customer>(); //Get IQueryable Object
 
         IOrderedQueryable<Customer> linqQuery = customersQueryable
